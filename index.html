@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TutorChile — Tutor IA para Emprendedores</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon">🇨🇱</span>
+        <span class="logo-text">TutorChile</span>
+      </div>
+      <button class="btn-icon" id="btn-new-chat" title="Nueva conversación">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+      </button>
+    </div>
+
+    <nav class="topics-nav">
+      <p class="nav-label">Temas frecuentes</p>
+      <button class="topic-btn" data-topic="¿Cómo creo una empresa en Chile? Explícame los pasos y qué tipo de sociedad me conviene más.">
+        🏢 Crear una empresa
+      </button>
+      <button class="topic-btn" data-topic="¿Cuáles son los fondos y financiamientos disponibles para emprendedores en Chile? Quiero saber sobre CORFO y SERCOTEC.">
+        💰 Fondos y financiamiento
+      </button>
+      <button class="topic-btn" data-topic="¿Cómo funciona el SII para mi empresa? Necesito entender el IVA, las boletas y las declaraciones mensuales.">
+        📊 SII y tributación
+      </button>
+      <button class="topic-btn" data-topic="¿Cómo registro mi marca en el INAPI? ¿Cuánto cuesta y cuánto demora el proceso?">
+        ™️ Registro de marca
+      </button>
+      <button class="topic-btn" data-topic="¿Qué estrategias de marketing digital funcionan mejor para emprender en Chile? Tengo un presupuesto limitado.">
+        📣 Marketing digital
+      </button>
+      <button class="topic-btn" data-topic="¿Cómo contrato a mi primer empleado en Chile? ¿Qué contrato uso y cuánto debo pagar en cotizaciones?">
+        👥 Mi primer empleado
+      </button>
+      <button class="topic-btn" data-topic="¿Cómo valido mi idea de negocio antes de invertir dinero? Quiero saber si hay mercado real.">
+        💡 Validar mi idea
+      </button>
+      <button class="topic-btn" data-topic="¿Qué incubadoras y aceleradoras hay en Chile para startups? ¿Cómo postulo a StartUp Chile?">
+        🚀 Incubadoras y aceleradoras
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <p class="footer-note">Disponible 24/7 para emprendedores chilenos</p>
+    </div>
+  </aside>
+
+  <!-- ── CONTENIDO PRINCIPAL ── -->
+  <main class="main">
+    <!-- Header -->
+    <header class="chat-header">
+      <button class="btn-icon btn-menu" id="btn-menu" title="Menú">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <div class="header-center">
+        <span class="header-title">Tutor IA para Emprendedores</span>
+        <span class="status-badge">
+          <span class="status-dot"></span>En línea
+        </span>
+      </div>
+      <div class="header-right">
+        <span class="powered-by">Powered by Claude</span>
+      </div>
+    </header>
+
+    <!-- Área de chat -->
+    <div class="chat-area" id="chat-area">
+      <!-- Pantalla de bienvenida -->
+      <div class="welcome-screen" id="welcome-screen">
+        <div class="welcome-content">
+          <div class="welcome-avatar">🇨🇱</div>
+          <h1 class="welcome-title">¡Hola, emprendedor!</h1>
+          <p class="welcome-subtitle">
+            Soy <strong>TutorChile</strong>, tu asesor de inteligencia artificial para emprender en Chile.
+            Estoy aquí para ayudarte con todo lo que necesitas saber sobre negocios, trámites, financiamiento y más.
+          </p>
+          <div class="welcome-cards">
+            <div class="welcome-card">
+              <span class="card-icon">📋</span>
+              <span>Trámites y constitución de empresa</span>
+            </div>
+            <div class="welcome-card">
+              <span class="card-icon">💵</span>
+              <span>Fondos CORFO, SERCOTEC y más</span>
+            </div>
+            <div class="welcome-card">
+              <span class="card-icon">📈</span>
+              <span>Marketing y estrategia de negocio</span>
+            </div>
+            <div class="welcome-card">
+              <span class="card-icon">⚖️</span>
+              <span>Legal, tributación y RRHH</span>
+            </div>
+          </div>
+          <p class="welcome-hint">¿Por dónde quieres empezar? Puedes escribirme o elegir un tema del menú lateral.</p>
+        </div>
+      </div>
+
+      <!-- Mensajes del chat -->
+      <div class="messages" id="messages"></div>
+    </div>
+
+    <!-- Input área -->
+    <div class="input-area">
+      <div class="input-wrapper">
+        <textarea
+          id="user-input"
+          class="chat-input"
+          placeholder="Pregúntame sobre tu emprendimiento..."
+          rows="1"
+          maxlength="4000"
+        ></textarea>
+        <button class="btn-send" id="btn-send" title="Enviar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22,2 15,22 11,13 2,9"/>
+          </svg>
+        </button>
+      </div>
+      <p class="input-disclaimer">
+        TutorChile puede cometer errores. Para decisiones importantes, consulta con un profesional.
+      </p>
+    </div>
+  </main>
+
+  <!-- Overlay para mobile -->
+  <div class="overlay" id="overlay"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
