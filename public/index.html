@@ -8,13 +8,142 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .tabs-container {
+      display: flex;
+      gap: 8px;
+      background: rgba(0,0,0,0.15);
+      padding: 4px;
+      border-radius: 6px;
+      margin-bottom: 24px;
+    }
+    
+    .tab-btn {
+      flex: 1;
+      padding: 8px 12px;
+      background: transparent;
+      color: rgba(255,255,255,0.8);
+      border: none;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .tab-btn.active {
+      background: white;
+      color: #003D82;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+    
+    .news-card {
+      background: white;
+      border: 0.5px solid #E0E0E0;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    
+    .news-card:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .news-card-header {
+      height: 100px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 12px;
+      color: white;
+      font-size: 32px;
+    }
+    
+    .news-badge {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    
+    .news-card-content {
+      padding: 16px;
+    }
+    
+    .news-date {
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    
+    .news-title {
+      font-size: 15px;
+      font-weight: 500;
+      margin: 0 0 8px 0;
+      color: #333;
+    }
+    
+    .news-description {
+      font-size: 13px;
+      color: #666;
+      margin: 0;
+      line-height: 1.5;
+    }
+    
+    .news-1 { background: linear-gradient(135deg, #003D82 0%, #005AB3 100%); }
+    .news-2 { background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%); }
+    .news-3 { background: linear-gradient(135deg, #D84315 0%, #E64A19 100%); }
+    .news-4 { background: linear-gradient(135deg, #6A1B9A 0%, #7B1FA2 100%); }
+    .news-5 { background: linear-gradient(135deg, #00838F 0%, #0097A7 100%); }
+    .news-6 { background: linear-gradient(135deg, #F57C00 0%, #E65100 100%); }
+    
+    .news-1 .news-date { color: #0288D1; }
+    .news-2 .news-date { color: #2E7D32; }
+    .news-3 .news-date { color: #D84315; }
+    .news-4 .news-date { color: #6A1B9A; }
+    .news-5 .news-date { color: #00838F; }
+    .news-6 .news-date { color: #F57C00; }
+
+    .logo-img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-icon {
+      font-size: 24px;
+    }
+  </style>
 </head>
 <body>
   <!-- ── SIDEBAR ── -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="logo">
-        <span class="logo-icon">🇨🇱</span>
+        <img src="logo_tutor_chile.png" alt="TutorChile" class="logo-img" />
         <span class="logo-text">TutorChile</span>
       </div>
       <button class="btn-icon" id="btn-new-chat" title="Nueva conversación">
@@ -22,6 +151,12 @@
           <path d="M12 5v14M5 12h14"/>
         </svg>
       </button>
+    </div>
+
+    <!-- Pestañas -->
+    <div class="tabs-container">
+      <button class="tab-btn active" data-tab="chat" id="tab-btn-chat">💬 Chat</button>
+      <button class="tab-btn" data-tab="news" id="tab-btn-news">📰 Noticias</button>
     </div>
 
     <nav class="topics-nav">
@@ -69,7 +204,7 @@
         </svg>
       </button>
       <div class="header-center">
-        <span class="header-title">Tutor IA para Emprendedores</span>
+        <span class="header-title" id="header-title">Tutor IA para Emprendedores</span>
         <span class="status-badge">
           <span class="status-dot"></span>En línea
         </span>
@@ -79,63 +214,152 @@
       </div>
     </header>
 
-    <!-- Área de chat -->
-    <div class="chat-area" id="chat-area">
-      <!-- Pantalla de bienvenida -->
-      <div class="welcome-screen" id="welcome-screen">
-        <div class="welcome-content">
-          <div class="welcome-avatar">🇨🇱</div>
-          <h1 class="welcome-title">¡Hola, emprendedor!</h1>
-          <p class="welcome-subtitle">
-            Soy <strong>TutorChile</strong>, tu asesor de inteligencia artificial para emprender en Chile.
-            Estoy aquí para ayudarte con todo lo que necesitas saber sobre negocios, trámites, financiamiento y más.
-          </p>
-          <div class="welcome-cards">
-            <div class="welcome-card">
-              <span class="card-icon">📋</span>
-              <span>Trámites y constitución de empresa</span>
+    <!-- ── TAB: CHAT ── -->
+    <div class="tab-content active" id="chat-tab">
+      <div class="chat-area" id="chat-area">
+        <!-- Pantalla de bienvenida -->
+        <div class="welcome-screen" id="welcome-screen">
+          <div class="welcome-content">
+            <div class="welcome-avatar">🇨🇱</div>
+            <h1 class="welcome-title">¡Hola, emprendedor!</h1>
+            <p class="welcome-subtitle">
+              Soy <strong>TutorChile</strong>, tu asesor de inteligencia artificial para emprender en Chile.
+              Estoy aquí para ayudarte con todo lo que necesitas saber sobre negocios, trámites, financiamiento y más.
+            </p>
+            <div class="welcome-cards">
+              <div class="welcome-card">
+                <span class="card-icon">📋</span>
+                <span>Trámites y constitución de empresa</span>
+              </div>
+              <div class="welcome-card">
+                <span class="card-icon">💵</span>
+                <span>Fondos CORFO, SERCOTEC y más</span>
+              </div>
+              <div class="welcome-card">
+                <span class="card-icon">📈</span>
+                <span>Marketing y estrategia de negocio</span>
+              </div>
+              <div class="welcome-card">
+                <span class="card-icon">⚖️</span>
+                <span>Legal, tributación y RRHH</span>
+              </div>
             </div>
-            <div class="welcome-card">
-              <span class="card-icon">💵</span>
-              <span>Fondos CORFO, SERCOTEC y más</span>
-            </div>
-            <div class="welcome-card">
-              <span class="card-icon">📈</span>
-              <span>Marketing y estrategia de negocio</span>
-            </div>
-            <div class="welcome-card">
-              <span class="card-icon">⚖️</span>
-              <span>Legal, tributación y RRHH</span>
-            </div>
+            <p class="welcome-hint">¿Por dónde quieres empezar? Puedes escribirme o elegir un tema del menú lateral.</p>
           </div>
-          <p class="welcome-hint">¿Por dónde quieres empezar? Puedes escribirme o elegir un tema del menú lateral.</p>
         </div>
+
+        <!-- Mensajes del chat -->
+        <div class="messages" id="messages"></div>
       </div>
 
-      <!-- Mensajes del chat -->
-      <div class="messages" id="messages"></div>
+      <!-- Input área -->
+      <div class="input-area">
+        <div class="input-wrapper">
+          <textarea
+            id="user-input"
+            class="chat-input"
+            placeholder="Pregúntame sobre tu emprendimiento..."
+            rows="1"
+            maxlength="4000"
+          ></textarea>
+          <button class="btn-send" id="btn-send" title="Enviar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22,2 15,22 11,13 2,9"/>
+            </svg>
+          </button>
+        </div>
+        <p class="input-disclaimer">
+          TutorChile puede cometer errores. Para decisiones importantes, consulta con un profesional.
+        </p>
+      </div>
     </div>
 
-    <!-- Input área -->
-    <div class="input-area">
-      <div class="input-wrapper">
-        <textarea
-          id="user-input"
-          class="chat-input"
-          placeholder="Pregúntame sobre tu emprendimiento..."
-          rows="1"
-          maxlength="4000"
-        ></textarea>
-        <button class="btn-send" id="btn-send" title="Enviar">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="22" y1="2" x2="11" y2="13"/>
-            <polygon points="22,2 15,22 11,13 2,9"/>
-          </svg>
-        </button>
+    <!-- ── TAB: NOTICIAS ── -->
+    <div class="tab-content" id="news-tab">
+      <div style="max-width: 900px;">
+        <h1 style="font-size: 28px; font-weight: 500; margin: 0 0 24px 0; color: #333;">📰 Noticias de Emprendimiento</h1>
+        
+        <div class="news-grid">
+          <!-- Noticia 1: SERCOTEC -->
+          <div class="news-card">
+            <div class="news-card-header news-1">
+              <span>🚀</span>
+              <span class="news-badge">SERCOTEC</span>
+            </div>
+            <div class="news-card-content">
+              <div class="news-date">Actualizado hoy</div>
+              <h3 class="news-title">Convocatoria 2026: Programa MiPyme Segura</h3>
+              <p class="news-description">Se abrió la convocatoria para pequeños y medianos empresarios con hasta 50 trabajadores. Más detalles en el portal SERCOTEC.</p>
+            </div>
+          </div>
+
+          <!-- Noticia 2: CORFO -->
+          <div class="news-card">
+            <div class="news-card-header news-2">
+              <span>💰</span>
+              <span class="news-badge">CORFO</span>
+            </div>
+            <div class="news-card-content">
+              <div class="news-date">Hace 3 días</div>
+              <h3 class="news-title">Fondos CORFO para Innovación 2026</h3>
+              <p class="news-description">CORFO abre línea de financiamiento para proyectos de innovación con tasas preferenciales hasta el 5% anual.</p>
+            </div>
+          </div>
+
+          <!-- Noticia 3: Tributario -->
+          <div class="news-card">
+            <div class="news-card-header news-3">
+              <span>📊</span>
+              <span class="news-badge">TRIBUTARIO</span>
+            </div>
+            <div class="news-card-content">
+              <div class="news-date">Hace 5 días</div>
+              <h3 class="news-title">Cambios en UF para 2026</h3>
+              <p class="news-description">El SII informa nuevos valores de UF y actualización de impuestos para empresas. Revisa si tu empresa es afectada.</p>
+            </div>
+          </div>
+
+          <!-- Noticia 4: StartUp Chile -->
+          <div class="news-card">
+            <div class="news-card-header news-4">
+              <span>🏆</span>
+              <span class="news-badge">STARTUP CHILE</span>
+            </div>
+            <div class="news-card-content">
+              <div class="news-date">Hace 1 semana</div>
+              <h3 class="news-title">Startup Chile abre convocatoria S24</h3>
+              <p class="news-description">Postula tu startup y obtén hasta $40,000 USD + visa de 1 año. Plazo: 30 de junio.</p>
+            </div>
+          </div>
+
+          <!-- Noticia 5: Legal -->
+          <div class="news-card">
+            <div class="news-card-header news-5">
+              <span>🔗</span>
+              <span class="news-badge">LEGAL</span>
+            </div>
+            <div class="news-card-content">
+              <div class="news-date">Hace 2 semanas</div>
+              <h3 class="news-title">Nueva ley de SpA simplificada</h3>
+              <p class="news-description">El Registro de Empresas aceptará constituciones de SpA 100% en línea desde marzo 2026.</p>
+            </div>
+          </div>
+
+          <!-- Noticia 6: Capacitación -->
+          <div class="news-card">
+            <div class="news-card-header news-6">
+              <span>💼</span>
+              <span class="news-badge">CAPACITACIÓN</span>
+            </div>
+            <div class="news-card-content">
+              <div class="news-date">Hace 3 semanas</div>
+              <h3 class="news-title">Webinars gratuitos SERCOTEC mayo</h3>
+              <p class="news-description">Cursos online sobre marketing digital, contabilidad y transformación digital para pequeños negocios.</p>
+            </div>
+          </div>
+        </div>
       </div>
-      <p class="input-disclaimer">
-        TutorChile puede cometer errores. Para decisiones importantes, consulta con un profesional.
-      </p>
     </div>
   </main>
 
@@ -143,5 +367,23 @@
   <div class="overlay" id="overlay"></div>
 
   <script src="app.js"></script>
+  <script>
+    // Lógica de pestañas
+    document.getElementById('tab-btn-chat').addEventListener('click', function() {
+      document.getElementById('chat-tab').classList.add('active');
+      document.getElementById('news-tab').classList.remove('active');
+      document.getElementById('tab-btn-chat').classList.add('active');
+      document.getElementById('tab-btn-news').classList.remove('active');
+      document.getElementById('header-title').textContent = 'Tutor IA para Emprendedores';
+    });
+
+    document.getElementById('tab-btn-news').addEventListener('click', function() {
+      document.getElementById('chat-tab').classList.remove('active');
+      document.getElementById('news-tab').classList.add('active');
+      document.getElementById('tab-btn-chat').classList.remove('active');
+      document.getElementById('tab-btn-news').classList.add('active');
+      document.getElementById('header-title').textContent = '📰 Noticias';
+    });
+  </script>
 </body>
 </html>
