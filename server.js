@@ -10,8 +10,60 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 // ──────────────────────────────────────────────
+// PROTECCIÓN DE COSTOS: Rate Limiting
+// ──────────────────────────────────────────────
+
+// Almacenar requests por IP (en memoria, se borra cuando reinicia)
+const requestLimits = new Map();
+
+// Limites configurables
+const LIMITS = {
+  messagesPerHour: 10,      // Máximo 10 mensajes por hora por IP
+  messagesPerDay: 50,        // Máximo 50 mensajes por día por IP
+  maxTokensPerRequest: 800,  // Máximo tokens en respuesta (ahorra dinero)
+};
+
+// Middleware: verificar rate limit
+function checkRateLimit(req, res, next) {
+  const ip = req.ip || req.connection.remoteAddress || "unknown";
+  const now = Date.now();
+  const oneHourAgo = now - 60 * 60 * 1000;
+  const oneDayAgo = now - 24 * 60 * 60 * 1000;
+
+  if (!requestLimits.has(ip)) {
+    requestLimits.set(ip, []);
+  }
+
+  const requests = requestLimits.get(ip);
+  
+  // Limpiar requests antiguos
+  const recentRequests = requests.filter(timestamp => timestamp > oneHourAgo);
+  const dailyRequests = requests.filter(timestamp => timestamp > oneDayAgo);
+
+  // Verificar límites
+  if (recentRequests.length >= LIMITS.messagesPerHour) {
+    return res.status(429).json({
+      error: `Límite alcanzado: máximo ${LIMITS.messagesPerHour} mensajes por hora. Intenta más tarde.`
+    });
+  }
+
+  if (dailyRequests.length >= LIMITS.messagesPerDay) {
+    return res.status(429).json({
+      error: `Límite diario alcanzado: máximo ${LIMITS.messagesPerDay} mensajes por día. Vuelve mañana.`
+    });
+  }
+
+  // Registrar este request
+  recentRequests.push(now);
+  requestLimits.set(ip, recentRequests);
+
+  next();
+}
+
+app.use(checkRateLimit);
+
+// ──────────────────────────────────────────────
 // Prompt del sistema: experto en emprendimiento chileno
-// Se cachea para reducir costos en cada conversación
 // ──────────────────────────────────────────────
 const SYSTEM_PROMPT = `Eres TutorChile, un tutor de inteligencia artificial especializado en emprendimiento para Chile. Estás disponible 24 horas al día, 7 días a la semana.
 
@@ -104,12 +156,12 @@ Tu misión es guiar a emprendedores chilenos en todas las etapas de su negocio: 
 - Da ejemplos con cifras reales cuando sea posible (por ejemplo: "el SII te cobra una multa del 1.5% mensual...").
 - Cuando corresponda, sugiere el siguiente paso lógico.
 - Si el tema está fuera de tu dominio o requiere un profesional (abogado, contador), dilo claramente y recomienda cuándo buscar asesoría pagada.
-- Mantén respuestas concisas pero completas. Usa listas y encabezados cuando haya varios puntos.
+- **IMPORTANTE: Mantén respuestas CONCISAS (máximo 3-4 párrafos)**. Usuarios con límites de tiempo aprecian respuestas directas.
 
 Recuerda: tu objetivo es que cada emprendedor chileno sienta que tiene un mentor de confianza disponible en cualquier momento.`;
 
 // ──────────────────────────────────────────────
-// Endpoint de chat con streaming
+// Endpoint de chat con streaming y control de costos
 // ──────────────────────────────────────────────
 app.post("/api/chat", async (req, res) => {
   const { messages } = req.body;
@@ -127,7 +179,7 @@ app.post("/api/chat", async (req, res) => {
   try {
     const stream = client.messages.stream({
       model: "claude-opus-4-6",
-      max_tokens: 4096,
+      max_tokens: LIMITS.maxTokensPerRequest, // ⚠️ LIMITADO para ahorrar costos
       // Prompt caching: el system prompt extenso se cachea para ahorrar costos
       system: [
         {
@@ -165,10 +217,25 @@ app.post("/api/chat", async (req, res) => {
 });
 
 // ──────────────────────────────────────────────
-// Health check
+// Health check + Info de límites
 // ──────────────────────────────────────────────
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString() });
+app.get("/api/health", (req, res) => {
+  const ip = req.ip || req.connection.remoteAddress || "unknown";
+  const userRequests = requestLimits.get(ip) || [];
+  const oneHourAgo = Date.now() - 60 * 60 * 1000;
+  const recentRequests = userRequests.filter(t => t > oneHourAgo).length;
+
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    limits: {
+      maxPerHour: LIMITS.messagesPerHour,
+      maxPerDay: LIMITS.messagesPerDay,
+      maxTokensPerRequest: LIMITS.maxTokensPerRequest,
+      yourRecentRequests: recentRequests,
+      remainingThisHour: LIMITS.messagesPerHour - recentRequests,
+    }
+  });
 });
 
 // ──────────────────────────────────────────────
@@ -178,5 +245,10 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`\n✅ Tutor IA para Emprendedores Chile`);
   console.log(`   Servidor corriendo en: http://localhost:${PORT}`);
+  console.log(`\n🛡️  PROTECCIONES ACTIVAS:`);
+  console.log(`   • Rate limit: ${LIMITS.messagesPerHour} mensajes/hora por usuario`);
+  console.log(`   • Límite diario: ${LIMITS.messagesPerDay} mensajes/día por usuario`);
+  console.log(`   • Tokens máximos: ${LIMITS.maxTokensPerRequest} por respuesta`);
+  console.log(`   • Prompt caching: ACTIVADO (ahorra costos)\n`);
   console.log(`   Presiona Ctrl+C para detener\n`);
 });
