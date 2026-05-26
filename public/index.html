@@ -625,11 +625,84 @@
 
     function sendMessage() {
       const input = document.getElementById('user-input');
-      if (input.value.trim()) {
-        console.log('Mensaje:', input.value);
-        input.value = '';
-      }
+      const message = input.value.trim();
+      
+      if (!message) return;
+      
+      // Agregar mensaje del usuario
+      const messagesDiv = document.getElementById('messages');
+      const userMsg = document.createElement('div');
+      userMsg.className = 'message user';
+      userMsg.innerHTML = `
+        <div class="message-avatar">T</div>
+        <div class="message-body">
+          <div class="message-bubble">${escapeHtml(message)}</div>
+        </div>
+      `;
+      messagesDiv.appendChild(userMsg);
+      
+      // Limpiar input
+      input.value = '';
+      
+      // Scroll al final
+      setTimeout(() => {
+        document.getElementById('chat-area').scrollTop = document.getElementById('chat-area').scrollHeight;
+      }, 100);
+      
+      // Enviar al backend
+      fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: message })
+      })
+      .then(res => res.json())
+      .then(data => {
+        // Agregar respuesta de Claude
+        const assistantMsg = document.createElement('div');
+        assistantMsg.className = 'message assistant';
+        assistantMsg.innerHTML = `
+          <div class="message-avatar">🤖</div>
+          <div class="message-body">
+            <div class="message-bubble">${escapeHtml(data.reply)}</div>
+          </div>
+        `;
+        messagesDiv.appendChild(assistantMsg);
+        
+        // Scroll al final
+        document.getElementById('chat-area').scrollTop = document.getElementById('chat-area').scrollHeight;
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'message assistant';
+        errorMsg.innerHTML = `
+          <div class="message-avatar">⚠️</div>
+          <div class="message-body">
+            <div class="message-bubble">Error: No se pudo conectar al servidor. Verifica tu conexión.</div>
+          </div>
+        `;
+        messagesDiv.appendChild(errorMsg);
+      });
     }
+    
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+    
+    // Permitir Enter para enviar
+    document.getElementById('user-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
 
     const newsData = [
       { icon: '🚀', cat: 'SERCOTEC', title: 'Convocatoria MiPyme Segura 2026', desc: 'Programa de recuperación para empresas afectadas.', date: 'Hoy', url: 'https://www.sercotec.cl/activan-fondo-mipyme-segura-para-apoyar-a-locatarios-afectados-por-incendio-en-la-vega-central/', color: 'news-1' },
